@@ -1,4 +1,5 @@
 import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Lead } from '../types';
 import VibeScoreGauge from './VibeScoreGauge';
 import { Building, Mail, Calendar, MessageCircle, ExternalLink } from 'lucide-react';
