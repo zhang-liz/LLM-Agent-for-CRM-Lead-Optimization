@@ -31,7 +31,7 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
   const [temperatureFilter, setTemperatureFilter] = useState<'all' | 'hot' | 'warm' | 'cold'>('all');
 
   const filteredAndSortedLeads = useMemo(() => {
-    let filtered = leads.filter(lead => {
+    const filtered = leads.filter(lead => {
       // Temperature filter
       if (temperatureFilter !== 'all') {
         if (temperatureFilter === 'hot' && lead.vibeScore < 80) return false;
@@ -184,7 +184,7 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
         <div className="flex items-center gap-4">
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy((e.target.value as 'vibeScore' | 'lastInteraction' | 'name') || 'vibeScore')}
             className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
           >
             <option value="vibeScore">Sort by Vibe Score</option>
