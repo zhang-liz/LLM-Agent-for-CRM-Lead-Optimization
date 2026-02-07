@@ -1,5 +1,5 @@
 import type { Lead, Interaction, ScoreHistory, TeamMetrics } from '../types';
-import { calculateVibeScore, getScoreTrend } from '../utils/sentimentAnalysis';
+import { calculateEngagementScore, getScoreTrend } from '../utils/sentimentAnalysis';
 
 // Mock interaction data
 const sampleInteractions: Interaction[] = [
@@ -57,7 +57,7 @@ const sampleInteractions: Interaction[] = [
   }
 ];
 
-// Generate mock leads with calculated vibe scores
+// Generate mock leads with calculated engagement scores
 function generateMockLeads(): Lead[] {
   const companies = ['TechCorp', 'InnovateInc', 'DataSystems', 'CloudWorks', 'NextGen Solutions', 'Digital Dynamics', 'FutureTech', 'SmartBusiness'];
   const positions = ['CEO', 'CTO', 'VP Sales', 'Marketing Director', 'Product Manager', 'Operations Manager'];
@@ -78,7 +78,7 @@ function generateMockLeads(): Lead[] {
 
   return Array.from({ length: 50 }, (_, i) => {
     const leadInteractions = sampleInteractions.filter(int => int.leadId === `lead${i + 1}`);
-    const currentScore = calculateVibeScore(leadInteractions.map(int => ({
+    const currentScore = calculateEngagementScore(leadInteractions.map(int => ({
       content: int.content,
       timestamp: int.timestamp,
       type: int.type
@@ -91,7 +91,7 @@ function generateMockLeads(): Lead[] {
       email: `contact${i + 1}@${companies[i % companies.length].toLowerCase().replace(/\s+/g, '')}.com`,
       company: companies[i % companies.length],
       position: positions[i % positions.length],
-      vibeScore: Math.round(currentScore),
+      engagementScore: Math.round(currentScore),
       previousScore: Math.round(previousScore),
       trend: getScoreTrend(currentScore, previousScore),
       lastInteraction: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
@@ -132,8 +132,8 @@ export const mockInteractions = sampleInteractions;
 
 export const mockTeamMetrics: TeamMetrics = {
   totalLeads: mockLeads.length,
-  averageVibeScore: Math.round(mockLeads.reduce((sum, lead) => sum + lead.vibeScore, 0) / mockLeads.length),
-  highQualityLeads: mockLeads.filter(lead => lead.vibeScore > 75).length,
+  averageEngagementScore: Math.round(mockLeads.reduce((sum, lead) => sum + lead.engagementScore, 0) / mockLeads.length),
+  highQualityLeads: mockLeads.filter(lead => lead.engagementScore > 75).length,
   scoreImprovement: 8.3,
   interactionsToday: 23,
   conversionRate: 14.2
