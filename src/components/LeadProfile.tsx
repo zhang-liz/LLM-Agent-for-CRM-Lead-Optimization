@@ -1,17 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import type { Lead } from '../types';
-import VibeScoreGauge from './VibeScoreGauge';
+import type { Lead, RecommendationSuggestion } from '../types';
+import ScoreGauge from './ScoreGauge';
 import InteractionTimeline from './InteractionTimeline';
 import ScoreHistoryChart from './ScoreHistoryChart';
-import { ArrowLeft, Building, Mail, Calendar, ExternalLink, MessageCircle } from 'lucide-react';
+import { recordFeedback } from '../services/agentService';
+import { ArrowLeft, Building, Mail, Calendar, ExternalLink, MessageCircle, Sparkles, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { mockInteractions, generateScoreHistory } from '../data/mockData';
 
 interface LeadProfileProps {
   lead: Lead;
   onBack: () => void;
+  suggestion?: RecommendationSuggestion | null;
 }
 
-export default function LeadProfile({ lead, onBack }: LeadProfileProps) {
+export default function LeadProfile({ lead, onBack, suggestion }: LeadProfileProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'interactions' | 'history'>('overview');
 
   // Get interactions for this lead
@@ -107,18 +109,47 @@ export default function LeadProfile({ lead, onBack }: LeadProfileProps) {
           </div>
 
           <div className="text-center">
-            <VibeScoreGauge 
-              score={lead.vibeScore}
+            <ScoreGauge 
+              score={lead.engagementScore}
               previousScore={lead.previousScore}
               trend={lead.trend}
               size="lg"
             />
             <div className="mt-3">
-              <div className="text-sm text-gray-400 mb-1">Vibe Score</div>
+              <div className="text-sm text-gray-400 mb-1">Lead Score</div>
               <div className="text-xs text-gray-500">Last updated: 2h ago</div>
             </div>
           </div>
         </div>
+        {suggestion && (
+          <div className="mt-4 p-4 bg-amber-900/20 border border-amber-700/50 rounded-lg flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2 min-w-0">
+              <Sparkles className="w-5 h-5 text-amber-400 shrink-0" />
+              <div>
+                <div className="text-sm font-medium text-amber-200">Suggested: {suggestion.action}</div>
+                <div className="text-xs text-gray-400">{suggestion.reason}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => recordFeedback(lead.id, 'helpful', undefined)}
+                className="p-2 rounded text-gray-400 hover:text-green-400 hover:bg-gray-700"
+                title="Helpful"
+              >
+                <ThumbsUp className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => recordFeedback(lead.id, 'not_helpful', undefined)}
+                className="p-2 rounded text-gray-400 hover:text-red-400 hover:bg-gray-700"
+                title="Not helpful"
+              >
+                <ThumbsDown className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Tab Navigation */}

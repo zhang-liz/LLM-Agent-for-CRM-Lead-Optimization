@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
-interface VibeScoreGaugeProps {
+interface ScoreGaugeProps {
   score: number;
   previousScore?: number;
   trend: 'up' | 'down' | 'stable';
@@ -10,14 +10,14 @@ interface VibeScoreGaugeProps {
   animated?: boolean;
 }
 
-export default function VibeScoreGauge({ 
+export default function ScoreGauge({ 
   score, 
   previousScore, 
   trend, 
   size = 'md', 
   showTrend = true,
   animated = true 
-}: VibeScoreGaugeProps) {
+}: ScoreGaugeProps) {
   const [animatedScore, setAnimatedScore] = useState(0);
   const [isJumping, setIsJumping] = useState(false);
 

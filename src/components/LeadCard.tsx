@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Lead } from '../types';
-import VibeScoreGauge from './VibeScoreGauge';
+import ScoreGauge from './ScoreGauge';
 import { Building, Mail, Calendar, MessageCircle, ExternalLink } from 'lucide-react';
 
 interface LeadCardProps {
@@ -68,8 +68,8 @@ export default function LeadCard({ lead, onClick }: LeadCardProps) {
           </div>
         </div>
 
-        <VibeScoreGauge 
-          score={lead.vibeScore} 
+        <ScoreGauge 
+          score={lead.engagementScore} 
           previousScore={lead.previousScore}
           trend={lead.trend}
           size="sm"
