@@ -3,7 +3,7 @@ import type { Lead, FilterOptions, RecommendationSuggestion } from '../types';
 import LeadCard from './LeadCard';
 import DashboardFilters from './DashboardFilters';
 import MetricsCards from './MetricsCards';
-import { mockLeads, mockTeamMetrics } from '../data/mockData';
+import { mockLeads, mockTeamMetrics, mockInteractions } from '../data/mockData';
 import { getRecommendations, recordFeedback } from '../services/agentService';
 import { Search, ThumbsUp, ThumbsDown, Sparkles, RefreshCw } from 'lucide-react';
 
@@ -25,7 +25,7 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
 
   const fetchRecommendations = async () => {
     setRecommendationsLoading(true);
-    const result = await getRecommendations(leads, mockTeamMetrics);
+    const result = await getRecommendations(leads, mockTeamMetrics, mockInteractions);
     setRecommendations(result ?? null);
     setRecommendationsLoading(false);
   };

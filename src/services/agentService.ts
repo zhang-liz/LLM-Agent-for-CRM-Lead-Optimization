@@ -1,10 +1,11 @@
-import type { Lead, TeamMetrics, Recommendations } from '../types';
+import type { Lead, TeamMetrics, Recommendations, Interaction } from '../types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export async function getRecommendations(
   leads: Lead[],
-  teamMetrics?: TeamMetrics | null
+  teamMetrics?: TeamMetrics | null,
+  interactions?: Interaction[] | null
 ): Promise<Recommendations | null> {
   try {
     const payload = {
@@ -15,9 +16,24 @@ export async function getRecommendations(
         engagementScore: l.engagementScore,
         trend: l.trend,
         stage: l.stage,
-        lastInteraction: l.lastInteraction
+        lastInteraction: l.lastInteraction,
+        totalInteractions: l.totalInteractions,
+        email: l.email,
+        position: l.position,
+        source: l.source
       })),
-      teamMetrics: teamMetrics ?? undefined
+      teamMetrics: teamMetrics ?? undefined,
+      interactions: (interactions ?? []).map(i => ({
+        id: i.id,
+        leadId: i.leadId,
+        type: i.type,
+        content: i.content,
+        sentiment: i.sentiment,
+        sentimentScore: i.sentimentScore,
+        timestamp: i.timestamp,
+        source: i.source,
+        metadata: i.metadata
+      }))
     };
     const res = await fetch(`${API_URL}/api/agent/recommend`, {
       method: 'POST',
