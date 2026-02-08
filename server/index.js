@@ -5,6 +5,7 @@ import { analyzeSentiment as keywordSentiment } from './sentimentKeyword.js';
 import { getConfig, getConfigHistory, applyPatch, rollback } from './agentConfig.js';
 import { addFeedback, getRecentFeedback } from './feedbackStore.js';
 import { getCached, setCached } from './recommendCache.js';
+import { runRecommendWithTools } from './agentTools.js';
 import { getCached as getSentimentCached, setCached as setSentimentCached } from './sentimentCache.js';
 
 dotenv.config();
@@ -79,16 +80,23 @@ function buildRecommendations(leads, teamMetrics) {
   return { prioritizedLeadIds, suggestions, summary };
 }
 
-app.post('/api/agent/recommend', (req, res) => {
+app.post('/api/agent/recommend', async (req, res) => {
   try {
-    const { leads = [], teamMetrics } = req.body || {};
+    const { leads = [], teamMetrics, interactions = [] } = req.body || {};
     if (!Array.isArray(leads) || leads.length === 0) {
       return res.status(400).json({ error: 'Missing or invalid leads array' });
     }
-    const cached = getCached(leads, teamMetrics);
+    const cached = getCached(leads, teamMetrics, interactions);
     if (cached) return res.json(cached);
-    const result = buildRecommendations(leads, teamMetrics);
-    setCached(leads, teamMetrics, result);
+
+    const useTools = Boolean(process.env.OPENAI_API_KEY);
+    let result;
+    if (useTools) {
+      result = await runRecommendWithTools(leads, interactions, teamMetrics);
+    } else {
+      result = buildRecommendations(leads, teamMetrics);
+    }
+    setCached(leads, teamMetrics, result, interactions);
     res.json(result);
   } catch (err) {
     console.error('Recommend error:', err);
