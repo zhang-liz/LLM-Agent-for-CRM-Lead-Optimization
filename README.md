@@ -29,7 +29,8 @@ It works with mock data out of the box. The scoring logic is designed so you can
 | **Lead profile** | Per-lead view with score gauge, score breakdown (positivity, engagement, responsiveness, interest), interaction timeline, and score history chart. |
 | **Analytics** | Team-level metrics (avg score, high-quality leads, conversion rate) and charts for score distribution, stage, and source. |
 | **Settings** | Backend status, agent improvement trigger, score thresholds, integrations. |
-| **Sentiment engine** | Keyword-based sentiment (positive/neutral/negative); backend supports optional AI provider. |
+| **Sentiment engine** | Keyword-based or LLM-based sentiment (aspect-based: product, price, urgency); set `SENTIMENT_PROVIDER=llm` with `OPENAI_API_KEY`. |
+| **Buyer intent** | Detects hand-raise (demo, trial, quote) and subtle signals (pricing, case study); surfaces in lead profile and agent recommendations. |
 | **AI recommendations** | Backend agent returns prioritized leads and suggested actions; cache by lead-set hash with short TTL (5–15 min); thumbs up/down feedback. |
 | **Caching** | Sentiment cached by content hash; recommendations cached by lead-set hash with configurable TTL to reduce cost and latency. |
 | **Self-improving agent** | Feedback store, config versioning, optional “Run agent improvement” to refine scoring from feedback. |
@@ -77,7 +78,7 @@ Copy `.env.example` to `.env` and adjust as needed.
 |----------|--------|-------------|
 | `PORT` | Server | Backend port (default `3000`) |
 | `CORS_ORIGIN` | Server | Allowed frontend origin (e.g. `http://localhost:5173`) |
-| `SENTIMENT_PROVIDER` | Server | Sentiment engine: `keyword` (default) or an AI provider |
+| `SENTIMENT_PROVIDER` | Server | `keyword` (default) or `llm` (requires `OPENAI_API_KEY`; aspect-based sentiment) |
 | `RECOMMEND_CACHE_TTL_MIN` | Server | Recommendation cache TTL in minutes (5–15; default `10`) |
 | `VITE_API_URL` | Frontend | Backend API base URL (default `http://localhost:3000`) |
 
