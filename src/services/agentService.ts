@@ -32,7 +32,8 @@ export async function getRecommendations(
         sentimentScore: i.sentimentScore,
         timestamp: i.timestamp,
         source: i.source,
-        metadata: i.metadata
+        metadata: i.metadata,
+        intentSignals: i.intentSignals
       }))
     };
     const res = await fetch(`${API_URL}/api/agent/recommend`, {
