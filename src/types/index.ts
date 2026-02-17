@@ -1,3 +1,11 @@
+/** Buyer intent signal from interaction analysis */
+export interface IntentSignal {
+  intent: string;
+  strength: 'high' | 'medium' | 'low';
+  source?: string;
+  count?: number;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -13,6 +21,17 @@ export interface Lead {
   source: string;
   avatar?: string;
   hubspotId?: string;
+  /** Aggregated buyer intent signals from interactions */
+  intentSignals?: IntentSignal[];
+  intentSummary?: string;
+}
+
+/** Aspect-based sentiment (product, price, urgency, general) */
+export interface SentimentAspects {
+  product?: { sentiment: string; score: number };
+  price?: { sentiment: string; score: number };
+  urgency?: { sentiment: string; score: number };
+  general?: { sentiment: string; score: number };
 }
 
 export interface Interaction {
@@ -29,6 +48,10 @@ export interface Interaction {
     duration?: number;
     channel?: string;
   };
+  /** Intent signals detected from this interaction */
+  intentSignals?: IntentSignal[];
+  /** Aspect-based sentiment (when using LLM provider) */
+  aspects?: SentimentAspects;
 }
 
 export interface LeadScore {
