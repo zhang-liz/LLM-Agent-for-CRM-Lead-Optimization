@@ -1,10 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import type { Lead, FilterOptions, RecommendationSuggestion } from '../types';
+import type { Lead, FilterOptions, RecommendationSuggestion, TeamMetrics } from '../types';
 import LeadCard from './LeadCard';
 import DashboardFilters from './DashboardFilters';
 import MetricsCards from './MetricsCards';
-import { mockLeads, mockTeamMetrics, mockInteractions } from '../data/mockData';
+import { mockLeads, mockTeamMetrics, mockInteractions, applyAttributionToLeads } from '../data/mockData';
 import { getRecommendations, recordFeedback } from '../services/agentService';
+import { useConfig } from '../contexts/ConfigContext';
 import { Search, ThumbsUp, ThumbsDown, Sparkles, RefreshCw } from 'lucide-react';
 
 interface DashboardProps {
@@ -12,7 +13,17 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ onLeadSelect }: DashboardProps) {
-  const [leads] = useState<Lead[]>(mockLeads);
+  const { config } = useConfig();
+  const [leads, setLeads] = useState<Lead[]>(mockLeads);
+
+  useEffect(() => {
+    if (config) {
+      const attributed = applyAttributionToLeads(mockLeads, mockInteractions, config);
+      setLeads(attributed);
+    } else {
+      setLeads(mockLeads);
+    }
+  }, [config]);
   const [recommendations, setRecommendations] = useState<{ prioritizedLeadIds: string[]; suggestions: RecommendationSuggestion[]; summary?: string } | null>(null);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendationsOpen, setRecommendationsOpen] = useState(true);
@@ -25,12 +36,12 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
 
   const fetchRecommendations = async () => {
     setRecommendationsLoading(true);
-    const result = await getRecommendations(leads, mockTeamMetrics, mockInteractions);
+    const result = await getRecommendations(leads, teamMetrics, mockInteractions);
     setRecommendations(result ?? null);
     setRecommendationsLoading(false);
   };
 
-  useEffect(() => { fetchRecommendations(); }, []);
+  useEffect(() => { fetchRecommendations(); }, [leads]);
 
   const handleFeedback = async (e: React.MouseEvent, leadId: string, helpful: boolean) => {
     e.stopPropagation();
@@ -53,6 +64,13 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
   const coldLeads = leads.filter(lead => lead.engagementScore < 60);
 
   const [temperatureFilter, setTemperatureFilter] = useState<'all' | 'hot' | 'warm' | 'cold'>('all');
+
+  const teamMetrics: TeamMetrics = useMemo(() => ({
+    ...mockTeamMetrics,
+    totalLeads: leads.length,
+    averageEngagementScore: Math.round(leads.reduce((sum, l) => sum + l.engagementScore, 0) / leads.length) || 0,
+    highQualityLeads: leads.filter(l => l.engagementScore > 75).length
+  }), [leads]);
 
   const filteredAndSortedLeads = useMemo(() => {
     const filtered = leads.filter(lead => {
@@ -224,7 +242,7 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
       </div>
 
       {/* Metrics Cards */}
-      <MetricsCards metrics={mockTeamMetrics} />
+      <MetricsCards metrics={teamMetrics} />
 
       {/* Temperature Filter */}
       <div className="flex items-center gap-4 bg-gray-800 p-4 rounded-lg border border-gray-700">
