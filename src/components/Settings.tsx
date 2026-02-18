@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Database, Zap, Bell, Shield, Download, Upload, ExternalLink, RefreshCw } from 'lucide-react';
+import { Database, Zap, Bell, Shield, Download, Upload, ExternalLink, RefreshCw, BarChart3 } from 'lucide-react';
 import { runImprove } from '../services/agentService';
+import { useConfig } from '../contexts/ConfigContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
+const ATTRIBUTION_MODES = [
+  { value: 'first_touch', label: 'First touch', desc: 'Credit to first interaction only' },
+  { value: 'last_touch', label: 'Last touch', desc: 'Credit to most recent interaction only' },
+  { value: 'linear', label: 'Linear', desc: 'Equal weight per touch' },
+  { value: 'time_decay', label: 'Time decay', desc: 'Recent interactions weighted higher' }
+] as const;
+
 export default function Settings() {
+  const { config, updateConfig } = useConfig();
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
   const [improveRunning, setImproveRunning] = useState(false);
   const [improveMessage, setImproveMessage] = useState<string | null>(null);
@@ -159,6 +168,53 @@ export default function Settings() {
               {improveMessage && (
                 <p className="text-sm text-gray-400 mt-2">{improveMessage}</p>
               )}
+            </div>
+          </div>
+        </div>
+
+        {/* Multi-Touch Attribution */}
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+          <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Multi-Touch Attribution
+          </h3>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Attribution Mode
+              </label>
+              <select
+                value={config?.attributionMode ?? 'time_decay'}
+                onChange={(e) => updateConfig({ attributionMode: e.target.value as 'first_touch' | 'last_touch' | 'linear' | 'time_decay' })}
+                className="w-full bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:border-blue-500 focus:outline-none"
+              >
+                {ATTRIBUTION_MODES.map(m => (
+                  <option key={m.value} value={m.value}>{m.label} – {m.desc}</option>
+                ))}
+              </select>
+            </div>
+
+            {(config?.attributionMode ?? 'time_decay') === 'time_decay' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Decay rate (λ): {(config?.timeDecayLambda ?? 0.1).toFixed(2)}
+                </label>
+                <input
+                  type="range"
+                  min="0.02"
+                  max="0.5"
+                  step="0.01"
+                  value={config?.timeDecayLambda ?? 0.1}
+                  onChange={(e) => updateConfig({ timeDecayLambda: parseFloat(e.target.value) })}
+                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                />
+                <div className="text-xs text-gray-500 mt-1">Higher = faster decay (recent interactions matter more)</div>
+              </div>
+            )}
+
+            <div className="text-sm text-gray-400">
+              How interaction contributions are aggregated into lead scores. Time decay weights recent touches more heavily.
             </div>
           </div>
         </div>
