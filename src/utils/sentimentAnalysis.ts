@@ -81,29 +81,71 @@ export function analyzeSentiment(text: string): SentimentResult {
   };
 }
 
-export function calculateEngagementScore(interactions: Array<{ content: string; timestamp: Date; type: string }>): number {
+/** Multi-touch attribution modes for aggregating interaction contributions */
+export type AttributionMode = 'first_touch' | 'last_touch' | 'linear' | 'time_decay';
+
+export interface AttributionOptions {
+  attributionMode?: AttributionMode;
+  timeDecayLambda?: number;
+}
+
+function getAttributionWeight(
+  index: number,
+  total: number,
+  timestamp: Date,
+  mode: AttributionMode,
+  lambda: number
+): number {
+  const now = Date.now();
+  const daysSince = (now - new Date(timestamp).getTime()) / (24 * 60 * 60 * 1000);
+
+  switch (mode) {
+    case 'first_touch':
+      return index === total - 1 ? 1 : 0; // Oldest = first touch = last in sorted-by-date-desc
+    case 'last_touch':
+      return index === 0 ? 1 : 0; // Most recent = last touch = first in sorted-by-date-desc
+    case 'linear':
+      return total > 0 ? 1 / total : 0;
+    case 'time_decay':
+    default:
+      return Math.exp(-lambda * daysSince);
+  }
+}
+
+export function calculateEngagementScore(
+  interactions: Array<{ content: string; timestamp: Date; type: string }>,
+  options?: AttributionOptions
+): number {
   if (interactions.length === 0) return 50;
+
+  const mode = options?.attributionMode ?? 'time_decay';
+  const lambda = options?.timeDecayLambda ?? 0.1;
+
+  // Sort by timestamp descending (most recent first)
+  const sorted = [...interactions].sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 
   let totalScore = 0;
   let weightedSum = 0;
 
-  interactions.forEach((interaction, index) => {
+  sorted.forEach((interaction, index) => {
     const sentiment = analyzeSentiment(interaction.content);
-    const recencyWeight = Math.exp(-(interactions.length - index - 1) * 0.1); // More recent = higher weight
+    const attributionWeight = getAttributionWeight(index, sorted.length, interaction.timestamp, mode, lambda);
     const typeWeight = interaction.type === 'email' ? 1.2 : interaction.type === 'chat' ? 1.0 : 0.8;
-    
+
     const normalizedScore = (sentiment.score + 1) * 50; // Convert -1,1 to 0,100
-    const weight = recencyWeight * typeWeight * sentiment.confidence;
-    
+    const weight = attributionWeight * typeWeight * sentiment.confidence;
+
     totalScore += normalizedScore * weight;
     weightedSum += weight;
   });
 
   const averageScore = weightedSum > 0 ? totalScore / weightedSum : 50;
-  
+
   // Add engagement bonus based on interaction frequency
   const engagementBonus = Math.min(interactions.length * 2, 20);
-  
+
   return Math.max(0, Math.min(100, averageScore + engagementBonus));
 }
 
