@@ -34,7 +34,7 @@ It works with mock data out of the box. The scoring logic is designed so you can
 | **Multi-touch attribution** | First touch, last touch, linear, or time-decay modes for aggregating interaction contributions into lead scores. |
 | **AI recommendations** | Backend agent returns prioritized leads and suggested actions; cache by lead-set hash with short TTL (5–15 min); thumbs up/down feedback. |
 | **Caching** | Sentiment cached by content hash; recommendations cached by lead-set hash with configurable TTL to reduce cost and latency. |
-| **Self-improving agent** | Feedback store, config versioning, optional “Run agent improvement” to refine scoring from feedback. |
+| **Self-improving agent** | Preference learning from thumbs up/down: learns stage and source weights; “Run agent improvement” applies learned weights to recommendations. |
 
 ---
 
