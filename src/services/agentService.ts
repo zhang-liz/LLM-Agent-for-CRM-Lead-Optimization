@@ -48,16 +48,23 @@ export async function getRecommendations(
   }
 }
 
+/** Lead metadata for preference learning (stage, source) */
+export interface FeedbackMetadata {
+  stage?: string;
+  source?: string;
+}
+
 export async function recordFeedback(
   leadId: string,
   outcomeType: 'helpful' | 'not_helpful' | 'contacted' | 'dismissed',
-  recommendationId?: string | null
+  recommendationId?: string | null,
+  metadata?: FeedbackMetadata | null
 ): Promise<boolean> {
   try {
     const res = await fetch(`${API_URL}/api/agent/feedback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ leadId, outcomeType, recommendationId })
+      body: JSON.stringify({ leadId, outcomeType, recommendationId, metadata: metadata ?? {} })
     });
     return res.ok;
   } catch {

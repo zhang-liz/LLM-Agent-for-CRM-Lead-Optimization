@@ -4,6 +4,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export interface ScoringConfig {
   scoringWeights: Record<string, number>;
+  stageWeights?: Record<string, number>;
+  sourceWeights?: Record<string, number>;
   attributionMode: AttributionMode;
   timeDecayLambda: number;
 }
@@ -15,6 +17,8 @@ export async function getConfig(): Promise<ScoringConfig | null> {
     const data = await res.json();
     return {
       scoringWeights: data.scoringWeights ?? {},
+      stageWeights: data.stageWeights ?? {},
+      sourceWeights: data.sourceWeights ?? {},
       attributionMode: data.attributionMode ?? 'time_decay',
       timeDecayLambda: data.timeDecayLambda ?? 0.1
     };
