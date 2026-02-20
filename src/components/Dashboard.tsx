@@ -4,7 +4,7 @@ import LeadCard from './LeadCard';
 import DashboardFilters from './DashboardFilters';
 import MetricsCards from './MetricsCards';
 import { mockLeads, mockTeamMetrics, mockInteractions, applyAttributionToLeads } from '../data/mockData';
-import { getRecommendations, recordFeedback } from '../services/agentService';
+import { getRecommendations, recordFeedback, buildFeedbackMetadata, getMLScores } from '../services/agentService';
 import { useConfig } from '../contexts/ConfigContext';
 import { Search, ThumbsUp, ThumbsDown, Sparkles, RefreshCw } from 'lucide-react';
 
@@ -20,10 +20,20 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
     if (config) {
       const attributed = applyAttributionToLeads(mockLeads, mockInteractions, config);
       setLeads(attributed);
+      getMLScores(attributed, mockInteractions).then(result => {
+        if (!result?.scores?.length) return;
+        const byId = new Map(result.scores.map(s => [s.leadId, s]));
+        setLeads(prev => prev.map(l => {
+          const s = byId.get(l.id);
+          if (!s) return l;
+          return { ...l, mlScore: s.mlScore, featureContributions: s.featureContributions };
+        }));
+      });
     } else {
       setLeads(mockLeads);
     }
   }, [config]);
+
   const [recommendations, setRecommendations] = useState<{ prioritizedLeadIds: string[]; suggestions: RecommendationSuggestion[]; summary?: string } | null>(null);
   const [recommendationsLoading, setRecommendationsLoading] = useState(false);
   const [recommendationsOpen, setRecommendationsOpen] = useState(true);
@@ -46,7 +56,8 @@ export default function Dashboard({ onLeadSelect }: DashboardProps) {
   const handleFeedback = async (e: React.MouseEvent, leadId: string, helpful: boolean) => {
     e.stopPropagation();
     const lead = leads.find(l => l.id === leadId);
-    const metadata = lead ? { stage: lead.stage, source: lead.source } : undefined;
+    const interactions = lead ? mockInteractions.filter(i => i.leadId === lead.id) : [];
+    const metadata = lead ? buildFeedbackMetadata(lead, interactions) : undefined;
     await recordFeedback(leadId, helpful ? 'helpful' : 'not_helpful', undefined, metadata);
   };
   const [filters, setFilters] = useState<FilterOptions>({
