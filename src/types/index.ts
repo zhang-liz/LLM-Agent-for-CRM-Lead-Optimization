@@ -24,6 +24,10 @@ export interface Lead {
   /** Aggregated buyer intent signals from interactions */
   intentSignals?: IntentSignal[];
   intentSummary?: string;
+  /** ML model score (0–100) when backend provides it */
+  mlScore?: number;
+  /** Per-feature contribution for explainability */
+  featureContributions?: Record<string, number>;
 }
 
 /** Aspect-based sentiment (product, price, urgency, general) */
