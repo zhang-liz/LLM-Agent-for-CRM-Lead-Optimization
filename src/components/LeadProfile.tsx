@@ -3,7 +3,7 @@ import type { Lead, RecommendationSuggestion } from '../types';
 import ScoreGauge from './ScoreGauge';
 import InteractionTimeline from './InteractionTimeline';
 import ScoreHistoryChart from './ScoreHistoryChart';
-import { recordFeedback } from '../services/agentService';
+import { recordFeedback, buildFeedbackMetadata } from '../services/agentService';
 import { ArrowLeft, Building, Mail, Calendar, ExternalLink, MessageCircle, Sparkles, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { mockInteractions, generateScoreHistory } from '../data/mockData';
 
@@ -122,6 +122,9 @@ export default function LeadProfile({ lead, onBack, suggestion }: LeadProfilePro
             />
             <div className="mt-3">
               <div className="text-sm text-gray-400 mb-1">Lead Score</div>
+              {lead.mlScore != null && (
+                <div className="text-xs text-purple-400 mb-1">ML conversion score: {lead.mlScore}</div>
+              )}
               <div className="text-xs text-gray-500">Last updated: 2h ago</div>
             </div>
           </div>
@@ -138,7 +141,7 @@ export default function LeadProfile({ lead, onBack, suggestion }: LeadProfilePro
             <div className="flex items-center gap-1 shrink-0">
               <button
                 type="button"
-                onClick={() => recordFeedback(lead.id, 'helpful', undefined, { stage: lead.stage, source: lead.source })}
+                onClick={() => recordFeedback(lead.id, 'helpful', undefined, buildFeedbackMetadata(lead, leadInteractions))}
                 className="p-2 rounded text-gray-400 hover:text-green-400 hover:bg-gray-700"
                 title="Helpful"
               >
@@ -146,7 +149,7 @@ export default function LeadProfile({ lead, onBack, suggestion }: LeadProfilePro
               </button>
               <button
                 type="button"
-                onClick={() => recordFeedback(lead.id, 'not_helpful', undefined, { stage: lead.stage, source: lead.source })}
+                onClick={() => recordFeedback(lead.id, 'not_helpful', undefined, buildFeedbackMetadata(lead, leadInteractions))}
                 className="p-2 rounded text-gray-400 hover:text-red-400 hover:bg-gray-700"
                 title="Not helpful"
               >
