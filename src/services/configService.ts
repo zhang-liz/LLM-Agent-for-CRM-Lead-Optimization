@@ -6,6 +6,8 @@ export interface ScoringConfig {
   scoringWeights: Record<string, number>;
   stageWeights?: Record<string, number>;
   sourceWeights?: Record<string, number>;
+  mlWeights?: Record<string, number> | null;
+  mlFeatureImportance?: Record<string, number> | null;
   attributionMode: AttributionMode;
   timeDecayLambda: number;
 }
@@ -19,6 +21,8 @@ export async function getConfig(): Promise<ScoringConfig | null> {
       scoringWeights: data.scoringWeights ?? {},
       stageWeights: data.stageWeights ?? {},
       sourceWeights: data.sourceWeights ?? {},
+      mlWeights: data.mlWeights ?? null,
+      mlFeatureImportance: data.mlFeatureImportance ?? null,
       attributionMode: data.attributionMode ?? 'time_decay',
       timeDecayLambda: data.timeDecayLambda ?? 0.1
     };
