@@ -170,14 +170,23 @@ export default function Settings() {
                 <p className="text-sm text-gray-400 mt-2">{improveMessage}</p>
               )}
               {(config?.stageWeights && Object.keys(config.stageWeights).length > 0) ||
-               (config?.sourceWeights && Object.keys(config.sourceWeights).length > 0) ? (
-                <div className="mt-3 p-3 bg-gray-700/50 rounded-lg text-xs">
+               (config?.sourceWeights && Object.keys(config.sourceWeights).length > 0) ||
+               (config?.mlFeatureImportance && Object.keys(config.mlFeatureImportance).length > 0) ? (
+                <div className="mt-3 p-3 bg-gray-700/50 rounded-lg text-xs space-y-1">
                   <div className="font-medium text-gray-300 mb-1">Learned from feedback</div>
                   {config?.stageWeights && Object.keys(config.stageWeights).length > 0 && (
                     <div className="text-gray-400">Stage: {Object.entries(config.stageWeights).map(([k, v]) => `${k}=${v.toFixed(2)}`).join(', ')}</div>
                   )}
                   {config?.sourceWeights && Object.keys(config.sourceWeights).length > 0 && (
                     <div className="text-gray-400">Source: {Object.entries(config.sourceWeights).map(([k, v]) => `${k}=${v.toFixed(2)}`).join(', ')}</div>
+                  )}
+                  {config?.mlFeatureImportance && Object.keys(config.mlFeatureImportance).length > 0 && (
+                    <div className="text-gray-400 pt-1 border-t border-gray-600 mt-1">
+                      ML feature importance: {Object.entries(config.mlFeatureImportance)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 5)
+                        .map(([k, v]) => `${k}=${v.toFixed(2)}`).join(', ')}
+                    </div>
                   )}
                 </div>
               ) : null}
