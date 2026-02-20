@@ -4,11 +4,12 @@ import dotenv from 'dotenv';
 import { analyzeSentiment as keywordSentiment } from './sentimentKeyword.js';
 import { analyzeSentimentLLM } from './sentimentLLM.js';
 import { getConfig, getConfigHistory, applyPatch, rollback } from './agentConfig.js';
-import { computeLearnedWeights, mergeWeights } from './feedbackLearning.js';
+import { computeLearnedWeights, mergeWeights, fitMLWeightsFromFeedback } from './feedbackLearning.js';
 import { addFeedback, getRecentFeedback } from './feedbackStore.js';
 import { getCached, setCached } from './recommendCache.js';
 import { runRecommendWithTools } from './agentTools.js';
 import { getCached as getSentimentCached, setCached as setSentimentCached } from './sentimentCache.js';
+import { scoreLeadsBatch, getFeatureImportance } from './mlScoring.js';
 
 dotenv.config();
 
@@ -37,6 +38,8 @@ app.get('/api/config', (_req, res) => {
       scoringWeights: config.scoringWeights,
       stageWeights: config.stageWeights ?? {},
       sourceWeights: config.sourceWeights ?? {},
+      mlWeights: config.mlWeights ?? null,
+      mlFeatureImportance: config.mlWeights ? getFeatureImportance(config.mlWeights) : null,
       attributionMode: config.attributionMode ?? 'time_decay',
       timeDecayLambda: config.timeDecayLambda ?? 0.1
     });
@@ -53,12 +56,30 @@ app.patch('/api/config', (req, res) => {
       scoringWeights: updated.scoringWeights,
       stageWeights: updated.stageWeights ?? {},
       sourceWeights: updated.sourceWeights ?? {},
+      mlWeights: updated.mlWeights ?? null,
       attributionMode: updated.attributionMode,
       timeDecayLambda: updated.timeDecayLambda
     });
   } catch (err) {
     console.error('Config patch error:', err);
     res.status(500).json({ error: 'Failed to update config' });
+  }
+});
+
+app.post('/api/score/batch', (req, res) => {
+  try {
+    const { leads = [], interactions = [] } = req.body || {};
+    if (!Array.isArray(leads) || leads.length === 0) {
+      return res.status(400).json({ error: 'Missing or invalid leads array' });
+    }
+    const config = getConfig();
+    const weights = config.mlWeights || null;
+    const scores = scoreLeadsBatch(leads, interactions, weights);
+    const featureImportance = weights ? getFeatureImportance(weights) : null;
+    res.json({ scores, featureImportance });
+  } catch (err) {
+    console.error('Score batch error:', err);
+    res.status(500).json({ error: 'Scoring failed' });
   }
 });
 
@@ -181,13 +202,16 @@ app.post('/api/agent/improve', (req, res) => {
     if (stageWeights && Object.keys(stageWeights).length > 0) patch.stageWeights = stageWeights;
     if (sourceWeights && Object.keys(sourceWeights).length > 0) patch.sourceWeights = sourceWeights;
 
+    const mlWeights = fitMLWeightsFromFeedback(helpfulOrNot);
+    if (mlWeights) patch.mlWeights = mlWeights;
+
     if (Object.keys(patch).length > 0) {
       applyPatch(patch);
     }
 
     res.json({
       success: true,
-      message: `Updated from ${helpfulOrNot.length} feedback entries`,
+      message: `Updated from ${helpfulOrNot.length} feedback entries${mlWeights ? ' (ML weights fitted)' : ''}`,
       config: getConfig()
     });
   } catch (err) {
