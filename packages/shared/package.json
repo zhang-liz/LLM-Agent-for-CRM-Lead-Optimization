@@ -1,0 +1,13 @@
+{
+  "name": "@leadloop/shared",
+  "version": "0.1.0-beta.1",
+  "private": true,
+  "type": "module",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "node -e \"console.log('shared package contains type contracts only')\""
+  }
+}
