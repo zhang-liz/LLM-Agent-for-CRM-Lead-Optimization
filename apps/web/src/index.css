@@ -1,0 +1,129 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Spline+Sans:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  /* Canvas: richer ice blue → seafoam (still light UI, more visible than near-white) */
+  --ll-canvas: #d4e4ee;
+  --ll-canvas-accent: #c4e2d8;
+  --ll-canvas-gradient: linear-gradient(135deg, #c2d8f0 0%, #cfe8e0 48%, #b8dccf 100%);
+  --ll-surface: #ffffff;
+  --ll-surface-muted: #f8fafc;
+  --ll-border: rgba(15, 23, 42, 0.08);
+  --ll-border-strong: rgba(15, 23, 42, 0.12);
+  /* Text */
+  --ll-text: #0f172a;
+  --ll-text-secondary: #475569;
+  --ll-text-muted: #64748b;
+  /* Brand accents */
+  --ll-accent: #0d9488;
+  --ll-accent-soft: rgba(13, 148, 136, 0.12);
+  --ll-periwinkle: #8b9dc9;
+  --ll-periwinkle-soft: rgba(139, 157, 201, 0.2);
+  --ll-mint: #7dd3c0;
+  --ll-mint-soft: rgba(125, 211, 192, 0.25);
+  --ll-peach: #f4c4a8;
+  --ll-peach-soft: rgba(244, 196, 168, 0.35);
+  --ll-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --ll-shadow-lg: 0 4px 6px rgba(15, 23, 42, 0.03), 0 20px 40px rgba(15, 23, 42, 0.08);
+  --ll-radius: 1.25rem;
+  --ll-radius-sm: 0.75rem;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: 'Spline Sans', ui-sans-serif, system-ui, sans-serif;
+    background: var(--ll-canvas-gradient);
+    background-color: var(--ll-canvas-accent);
+    color: var(--ll-text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+}
+
+@layer components {
+  .ll-shell {
+    @apply min-h-screen flex flex-col;
+  }
+
+  .ll-main {
+    @apply flex-1 w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-8 lg:py-10;
+  }
+
+  /* Primary card — elevated white */
+  .ll-card {
+    @apply rounded-[var(--ll-radius)] border bg-white;
+    border-color: var(--ll-border);
+    box-shadow: var(--ll-shadow);
+  }
+
+  .ll-card-muted {
+    @apply rounded-[var(--ll-radius)] border;
+    background: var(--ll-surface-muted);
+    border-color: var(--ll-border);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  }
+
+  /* Secondary inset panel */
+  .ll-panel {
+    @apply rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-sm;
+    box-shadow: var(--ll-shadow);
+  }
+
+  .ll-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors;
+  }
+
+  .ll-pill-active {
+    @apply bg-slate-900 text-white shadow-sm;
+  }
+
+  .ll-pill-ghost {
+    @apply bg-white/90 text-slate-600 border border-slate-200/90 hover:bg-slate-50 hover:border-slate-300;
+  }
+
+  .ll-label {
+    @apply text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-slate-500;
+  }
+
+  .ll-input {
+    @apply w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-slate-900 placeholder:text-slate-400 shadow-sm transition-colors focus:border-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-400/20;
+  }
+
+  .ll-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-[0.98];
+  }
+
+  .ll-btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50;
+  }
+
+  /* Subtle grain overlay (optional decoration) */
+  .ll-grain {
+    position: relative;
+  }
+  .ll-grain::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    opacity: 0.35;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode: overlay;
+  }
+}
